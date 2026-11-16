@@ -1,0 +1,7 @@
+{
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "python.defaultInterpreterPath": "${workspaceFolder}/budgettracker/.briefcase/budgettracker/venv-dev.cpython-314-darwin/bin/python",
+    "python.analysis.extraPaths": [
+    "${workspaceFolder}/budgettracker/.briefcase/budgettracker/venv-dev.cpython-314-darwin/lib/python3.14/site-packages"
+]
+}
