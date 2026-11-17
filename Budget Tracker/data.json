@@ -1,0 +1,11 @@
+{
+    "income": 1000.0,
+    "rent": 200.0,
+    "credit": 35.0,
+    "electricity": 50.0,
+    "gas": 100.0,
+    "water": 30.0,
+    "internet": 30.0,
+    "grocery": 200.0,
+    "commuting": 0.0
+}
