@@ -51,7 +51,7 @@ class BudgetTracker(toga.App):
                 text_align="center",
             ),
         )
-        self.income_input = toga.NumberInput(
+        self.income_input = toga.TextInput(
             value=0.00,
             style=toga.style.Pack(
                 font_size=13,
@@ -64,7 +64,7 @@ class BudgetTracker(toga.App):
             ),
         )
 
-        self.currency =toga.Label(
+        self.currency = toga.Label(
             "$",
             style=toga.style.Pack(
                 font_size=16,
@@ -128,7 +128,7 @@ class BudgetTracker(toga.App):
             ),
         )
 
-        self.rent_input=toga.NumberInput(
+        self.rent_input=toga.TextInput(
             value="0.00",
             style=toga.style.Pack(
                 width=75,
@@ -181,7 +181,7 @@ class BudgetTracker(toga.App):
             ),
         )
 
-        self.electricity_input=toga.NumberInput(
+        self.electricity_input=toga.TextInput(
             value="0.00",
             style=toga.style.Pack(
                 width=75,
@@ -234,9 +234,8 @@ class BudgetTracker(toga.App):
             ),
         )
 
-        self.gas_input=toga.NumberInput(
+        self.gas_input=toga.TextInput(
             value="0.00",
-            step=10,
             style=toga.style.Pack(
                 width=75,
                 font_size=13,
@@ -287,7 +286,7 @@ class BudgetTracker(toga.App):
             ),
         )
 
-        self.water_input=toga.NumberInput(
+        self.water_input=toga.TextInput(
             value="0.00",
             style=toga.style.Pack(
                 width=75,
@@ -351,7 +350,7 @@ class BudgetTracker(toga.App):
             ),
         )
 
-        self.internet_input=toga.NumberInput(
+        self.internet_input=toga.TextInput(
             value="0.00",
             style=toga.style.Pack(
                 font_size=13,
@@ -402,7 +401,7 @@ class BudgetTracker(toga.App):
             ),
         )
 
-        self.grocery_input = toga.NumberInput(
+        self.grocery_input = toga.TextInput(
             value="0.00",
             style=toga.style.Pack(
                 font_size=13,
@@ -453,7 +452,7 @@ class BudgetTracker(toga.App):
             ),
         )
 
-        self.credit_input = toga.NumberInput(
+        self.credit_input = toga.TextInput(
             value="0.00",
             style=toga.style.Pack(
                 width=75,
@@ -504,7 +503,7 @@ class BudgetTracker(toga.App):
             ),
         )
 
-        self.commuting_input = toga.NumberInput(
+        self.commuting_input = toga.TextInput(
             value=0.00,
             style=toga.style.Pack(
                 width=75,
@@ -784,7 +783,7 @@ class BudgetTracker(toga.App):
                 width=100,
             ),
         )
-        self.add_expense_input = toga.NumberInput(
+        self.add_expense_input = toga.TextInput(
             value="0.00",
             style=toga.style.Pack(
                 width=75,
@@ -806,6 +805,17 @@ class BudgetTracker(toga.App):
         )
         add_expense_line.add(self.currency)
         add_expense_line.add(self.add_expense_input)
+
+        self.add_button = toga.Button(
+            "Delete",
+            on_press=self.delete_first,
+            style=toga.style.Pack(
+                width=75,
+                margin_left=20,
+                margin_top= 15,
+                font_size=12,
+            )
+        )
         self.add_expense_box = toga.Box(
             style=toga.style.Pack(
                 width=120,
@@ -818,6 +828,7 @@ class BudgetTracker(toga.App):
         )
         self.add_expense_box.add(self.add_expense_label)
         self.add_expense_box.add(add_expense_line)
+        self.add_expense_box.add(self.add_button)
     
         self.expense_container3 = toga.Box(
             style=toga.style.Pack(
@@ -829,6 +840,12 @@ class BudgetTracker(toga.App):
     
         self.expense_container3.add(self.add_expense_box)
         self.expense_widget.add(self.expense_container3)
+
+        for self.expense, self.value in self.custom_dict.items():
+           self.expense = self.add_expense_label.value
+           self.value = self.add_expense_input.value
+           
+           
 
 
     def save_budget(self, widget):
@@ -845,23 +862,26 @@ class BudgetTracker(toga.App):
             "credit": str(self.credit_input.value),
             "commuting": str(self.commuting_input.value),
         }
-
-        self.expense = self.add_expense_label.value
-        self.value = str(self.add_expense_input.value)
-        print("Input type:", type(self.value))
-        self.custom_dict[self.expense] = str(self.value)
         
-        data = {
-            "budget": self.budget_dict,
-            "custom": self.custom_dict,
+        if hasattr(self, "add_expense_label"):
+          self.expense = self.add_expense_label.value
+
+        if hasattr(self, "add_expense_input"):
+          self.value = str(self.add_expense_input.value)
+          self.custom_dict[self.expense] = float(self.value)
+
+
+        self.data = {
+          "budget": self.budget_dict,
+          "custom": self.custom_dict,
         }
         
-
+        
         with open(data_file, "w") as file:
-            json.dump(data, file, indent=4)
+            json.dump(self.data, file, indent=4)
 
         with open(data_file, "r") as file:
-            data = json.load(file)
+            self.data = json.load(file)
     
         self.earned_input.value = str(self.budget_dict["income"])
 
@@ -872,21 +892,20 @@ class BudgetTracker(toga.App):
         remaining = float(self.budget_dict["income"]) - total_budget
         self.remaining_input.value = remaining
 
+
        
         with open(data_file, "w") as file:
-          json.dump(data, file, indent=4)
+          json.dump(self.data, file, indent=4)
           
-
-
 
 
     def load_budget(self):
         data_file = self.paths.data / "data.json"
         
         with open(data_file, "r") as file:
-            data = json.load(file)
-            self.budget_dict = data["budget"]
-            self.custom_dict = data["custom"]
+            self.data = json.load(file)
+            self.budget_dict = self.data["budget"]
+            self.custom_dict = self.data["custom"]
         if self.budget_dict:
           self.income_input.value = self.budget_dict["income"]
           self.rent_input.value = self.budget_dict["rent"]
@@ -907,7 +926,7 @@ class BudgetTracker(toga.App):
 
 
         if self.custom_dict:
-            for expense, value in self.custom_dict.items():
+            for self.expense, self.value in self.custom_dict.items():
                 self.saved_expense_label = toga.Label(
                     "",
                     style=toga.style.Pack(
@@ -918,8 +937,7 @@ class BudgetTracker(toga.App):
                         width=100,
                     )
                 )
-                self.saved_expense_input = toga.NumberInput(
-                    readonly=True,
+                self.saved_expense_input = toga.TextInput(
                     style=toga.style.Pack(
                         width=75,
                         font_size=13,
@@ -941,6 +959,17 @@ class BudgetTracker(toga.App):
                 self.added_line_box.add(self.currency)
                 self.added_line_box.add(self.saved_expense_input)
 
+                self.saved_button = toga.Button(
+                    "Delete",
+                    on_press=self.delete,
+                    style=toga.style.Pack(
+                        width=75,
+                        margin_left=20,
+                        margin_top=17,
+                        font_size=12,
+                    )
+                )
+
                 self.saved_box = toga.Box(
                     style=toga.style.Pack(
                         width=120,
@@ -953,23 +982,44 @@ class BudgetTracker(toga.App):
                 )
                 self.saved_box.add(self.saved_expense_label)
                 self.saved_box.add(self.added_line_box)
+                self.saved_box.add(self.saved_button)
 
                 self.expense_container3.add(self.saved_box)
                 self.expense_widget.add(self.expense_container3)
 
             
-                self.saved_expense_label.text = expense
-                self.saved_expense_input.value = float(value)
+                self.saved_expense_label.text = self.expense
+                self.saved_expense_input.value = float(self.value)
 
-                total_budget = total_budget + float(self.custom_dict[expense])
+                total_budget = total_budget + float(self.custom_dict[self.expense])
                 self.spent_input.value = total_budget
 
-                remaining = remaining - float(self.custom_dict[expense])
-                self.remaining_input.value = remaining
-
-            
+                remaining = remaining - float(self.custom_dict[self.expense])
+                self.remaining_input.value = remaining      
 
 
+    def delete(self, widget):
+        data_file = self.paths.data / "data.json"
+        self.data = {
+            "budget": self.budget_dict,
+            "custom": self.custom_dict,
+        }
+
+        with open (data_file, "r") as file:
+           self.data = json.load(file)
+        self.custom_dict = self.data["custom"]
+
+        self.custom_dict.pop(self.expense)
+
+        with open(data_file, "w") as file:
+           json.dump(self.data, file, indent=4)
+
+        self.expense_container3.remove(self.saved_box)
+        del self.saved_box
+
+    def delete_first(self, widget):
+       self.expense_container3.remove(self.add_expense_box)
+       del self.add_expense_box
 
 def main():
     return BudgetTracker()
